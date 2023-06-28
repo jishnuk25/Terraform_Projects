@@ -9,6 +9,7 @@ place similiar type of resources in a directory and define the resources in a ma
 Meta arguments - customize the behaviour of resources
 - count: create multiple instances according to the value assigned to the count
     ex:
+
         resource "google_compute_instance" "Dev_VM" {
             count = 5
             name = "dev_VM{count.index + 1}"
@@ -16,6 +17,7 @@ Meta arguments - customize the behaviour of resources
 
 - for_each: create multiple resource instances as per a set of strings
     ex: 
+    
         resource "google_compute_instance" "dev_vm" {
             for_each = toset( ["us-central-1", "asia-east-1-b", "europe-west4-a"] )
             name = "dev-${each.value}"
@@ -27,16 +29,16 @@ Meta arguments - customize the behaviour of resources
     
     implicit dependency
 
-    resource "google_compute_instance" "my_instance" {
+        resource "google_compute_instance" "my_instance" {
 
-        network_interface {
-            //implicit dependency -- the reference to the my_network in the network argument creates an implicit dependency automatically
-            network = google_compute_network.my_network.name
-            access_config {
-        
+            network_interface {
+                //implicit dependency -- the reference to the my_network in the network argument creates an implicit dependency automatically
+                network = google_compute_network.my_network.name
+                access_config {
+            
+                }
             }
         }
-    }
 
         resource "google_compute_network" "my_network" {
             name = "my_network"
@@ -44,22 +46,22 @@ Meta arguments - customize the behaviour of resources
 
     explicit dependency
 
-    resource "resource_type" "resource_name" {
-  
-    depends_on = [ <resource_type>.<resource_name> ]
+        resource "resource_type" "resource_name" {
+    
+        depends_on = [ <resource_type>.<resource_name> ]
 
-    }
+        }
 
     ex:
 
-    resource "google_compute_instance" "client" {
-  
-    depends_on = [ google_compute_instance.server ]
-    }
-
-    resource "google_compute_instance" "server" {
+        resource "google_compute_instance" "client" {
     
-    }
+        depends_on = [ google_compute_instance.server ]
+        }
+
+        resource "google_compute_instance" "server" {
+        
+        }
 
     note: in the above case the dependecy wouldn't be visible to terraform hence we have to provide it explicitly
 
