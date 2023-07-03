@@ -52,7 +52,7 @@ Meta arguments - customize the behaviour of resources
 
         }
 
-    ex:
+    ex1:
 
         resource "google_compute_instance" "client" {
     
@@ -64,5 +64,86 @@ Meta arguments - customize the behaviour of resources
         }
 
     note: in the above case the dependecy wouldn't be visible to terraform hence we have to provide it explicitly
+    
+    ex2:
 
+        resource "google_compute_address" "vm_static_ip" {
+            name = "terraform-static-ip"
+        }
+        resource google_compute_instance "vm_instance" {
+            name         = "${var.instance_name}"
+            zone         = "${var.instance_zone}"
+            machine_type = "${var.instance_type}"
+            boot_disk {
+                initialize_params {
+                image = "debian-cloud/debian-11"
+                }
+            }
+            network_interface {
+                network = "default"
+                access_config {
+                # Allocate a one-to-one NAT IP to the instance
+                nat_ip = google_compute_address.vm_static_ip.address
+                }
+            }
+        }
+        
 - lifecycle: define a lifecycle of resource. ex: high availability(spin up a resource before the current resource goes up, etc.)
+
+---
+
+Variables
+
+ways to assign values to variables-
+
+# .tfvars file(recommended method)
+    $ tf apply -var-file my-vars.tfvars
+# CLI options
+    $ tf apply -var project_id="my-project"
+# environment variables
+    $ TF_VAR_project_id="my-project" \
+      tf apply
+# if using terraform.tfvars
+    $ tf apply
+
+If no variable values are assigned after declaration, the cli would prompt you to enter the value during the plan phase.
+
+    ex:
+
+        variable "mybucket_storageclass" {
+            type = string
+            description = "Set your storage class value here"
+        }
+
+validate variable values by using rules
+
+    ex:
+
+        variable "mybucket_storageclass" {
+            type    = string
+            description = "set the storage class to the bucket"
+            validation {
+                condition = contains(["STANDARD", "MULTI_REGIONAL", "REGIONAL"], var.mybucket_storageclass)
+                error_message = "The allowed values are STANDARD, MULTI_REGIONAL, REGIONAL"
+            }
+        }
+
+---
+
+output values
+
+We can print resource attributes using output values
+
+    ex:
+
+        resource "google_storage_bucket_object" "Picture" {
+        ...  
+        }
+
+        output "picture_URL" {
+        description = "URL of the picture uploaded"
+        //value = <resource_type>.<resource_name>.<attribute>
+        value = google_storage_bucket_object.Picture.self_link
+        }
+
+ $ terraform output -- queries all outputs used in the current project

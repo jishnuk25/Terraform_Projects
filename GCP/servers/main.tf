@@ -1,6 +1,6 @@
 resource "google_storage_bucket" "mybucket" {
   name          = "bucket001914"
-  location      = "US"
+  location      = var.bucket_region
   storage_class = "STANDARD"
 }
 
@@ -18,15 +18,4 @@ resource "google_compute_instance" "myinstance" {
     access_config {
     }
   }
-}
-
-
-
-resource "google_compute_instance" "client" {
-  
-    depends_on = [ google_compute_instance.server ]
-}
-
-resource "google_compute_instance" "server" {
-  
 }

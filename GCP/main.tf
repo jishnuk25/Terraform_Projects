@@ -84,3 +84,13 @@ resource "google_compute_global_forwarding_rule" "forwarding_rule" {
   port_range  = "80"
   target      = google_compute_target_http_proxy.target_proxy.self_link
 }
+
+resource "google_storage_bucket_object" "Picture" {
+...  
+}
+
+output "picture_URL" {
+  description = "URL of the picture uploaded"
+//value = <resource_type>.<resource_name>.<attribute>
+  value = google_storage_bucket_object.Picture.self_link
+}
