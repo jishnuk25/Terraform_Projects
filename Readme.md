@@ -87,7 +87,7 @@ Meta arguments - customize the behaviour of resources
                 }
             }
         }
-        
+
 - lifecycle: define a lifecycle of resource. ex: high availability(spin up a resource before the current resource goes up, etc.)
 
 ---
@@ -96,14 +96,17 @@ Variables
 
 ways to assign values to variables-
 
-# .tfvars file(recommended method)
+ .tfvars file(recommended method)
     $ tf apply -var-file my-vars.tfvars
-# CLI options
+
+ CLI options
     $ tf apply -var project_id="my-project"
-# environment variables
+
+ environment variables
     $ TF_VAR_project_id="my-project" \
       tf apply
-# if using terraform.tfvars
+
+ if using terraform.tfvars
     $ tf apply
 
 If no variable values are assigned after declaration, the cli would prompt you to enter the value during the plan phase.
@@ -147,3 +150,69 @@ We can print resource attributes using output values
         }
 
  $ terraform output -- queries all outputs used in the current project
+
+ ---
+# Modules
+    Modules are collection of configuration in terraform
+
+    --- main.tf(root main.tf file)
+    --- network/
+        --- main.tf
+        --- variables.tf
+        --- outputs.tf
+    --- servers/
+        --- main.tf
+        --- variables.tf
+        --- outputs.tf
+    
+    In the above structure, we have two modules called network and servers. We can call the modules from our root file as below.
+    
+        provider "google" {
+            region = us-central1
+        }
+        module "web_server" {
+            source = "./server"
+        }
+        module "server_network" {
+            source = "./network"
+        }
+    
+    The source argument used above provides the path to the configuration code. The value can be either local or remote.
+    The supported source types includes terraform registry, github, bitbucket, HTTP URLs and cloud storage buckets.
+
+    * To pass resource attributes from one module to another, the argument must be configured as an output value in Terraform.
+
+        ex: The server module needs the network name created by the network module.
+
+            Using output values
+                - Declare the o/p value in the network module
+
+                    # /network/outputs.tf
+                    output "network_name" {
+                        value = google_compute_network.my_network.name
+                    }
+
+                - Define the network name as variable in the server module
+
+                    # /server/variables.tf
+                    variable "network_name" {
+                    }
+                    # /server/main.tf
+                    resource "google_compute_instance" "Server_VM" {
+                        network = var.network_name
+                    }
+                    ## Root config
+                    # main.tf
+                    module "Server_VM1" {
+                        source = ./server
+                        network_name = module.my_network.network_name
+                    }
+                    module "my_network_1" {
+                        source = ./network
+                    }
+
+    Once you run terraform init, the network_name will be available to use for the server module.
+
+
+            
+
