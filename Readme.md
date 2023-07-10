@@ -213,6 +213,28 @@ We can print resource attributes using output values
 
     Once you run terraform init, the network_name will be available to use for the server module.
 
+# Terraform state
 
+It is reccomended and best practice to store terraform state files in a remote location rather than in local to avoid conflicts when multiple users are using the same terraform configurations.
+Storing terraform state files remotely in a cloud storage bucket.
+        ex:
+            main.tf
+
+            resource "google_storage_bucket" "default" {
+            name = "bucket_terraform_state_7723"
+            force_destroy = false
+            location = "US"
+            storage_class = "STANDARD"
+            versioning {
+                enabled = true
+            }
+            }
             
+            backend.tf
 
+            terraform {
+            backend "gcs" {
+                bucket = "bucket_terraform_state_7723"
+                prefix = "terraform/state"
+            }
+            }
